@@ -1,0 +1,60 @@
+{
+    "weapons": {
+        "N-TEC 5": {"icon": "[0]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 0},
+        "N-TEC 5 Stock": {"icon": "[0]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 0},
+        "N-TEC 5 Nol Stock": {"icon": "[1]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 1},
+        "N-TEC 5 Adeen Stock": {"icon": "[2]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 2},
+        "N-TEC 5 'Cops-Bane' Stock": {"icon": "[3]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 3},
+        "N-TEC 7 Adeen": {"icon": "[2]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 2},
+        "N-TEC 5 Nol": {"icon": "[1]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 1},
+        "N-TEC 5 Adeen": {"icon": "[2]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 2},
+        "STAR 556": {"icon": "[0]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_STAR556.png", "type": "Assault Rifle", "max_slots": 0},
+        "STAR 556 R&D I": {"icon": "[1]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_STAR556.png", "type": "Assault Rifle", "max_slots": 1},
+        "STAR 556 R&D II": {"icon": "[2]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_STAR556.png", "type": "Assault Rifle", "max_slots": 2},
+        "N-TEC 5 Dvah": {"icon": "[3]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 3},
+        "STAR 556 R&D III": {"icon": "[3]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_STAR556.png", "type": "Assault Rifle", "max_slots": 3},
+        "N-TEC 5 Dvah Stock": {"icon": "[3]", "img": "https://apbdb.com/images/items/Weapon_AssaultRifle_NTEC_5.png", "type": "Assault Rifle", "max_slots": 3}
+    },
+    "secondaries": {
+        "ACT 44": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Obeya FBW": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Flare Gun": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Colby .45 AP": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Joker M9": {"icon": "🔫", "type": "Secondary Weapons"},
+        "N-FA 9": {"icon": "🔫", "type": "Secondary Weapons"},
+        "OCA Nano": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Joker RFP-9": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Colby RSA": {"icon": "🔫", "type": "Secondary Weapons"},
+        "S-AS PDW": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Showstopper": {"icon": "🔫", "type": "Secondary Weapons"},
+        "Colby SNR 850": {"icon": "🔫", "type": "Secondary Weapons"}
+    },
+    "grenades": {
+        "Concussion Grenade": {"icon": "💣", "type": "Grenades"},
+        "EMP Grenade": {"icon": "💣", "type": "Grenades"},
+        "Fag Grenade": {"icon": "💣", "type": "Grenades"},
+        "Percussion Grenade": {"icon": "💣", "type": "Grenades"},
+        "Half-Brick": {"icon": "💣", "type": "Grenades"},
+        "Eight-Ball": {"icon": "💣", "type": "Grenades"}
+    },
+    "mods": {
+        "Advanced Ironsight": {"icon": "📈", "color_tag": "🟠", "img": "https://apbdb.com/images/items/0.png"},
+        "Bandolier 3": {"icon": "📈", "color_tag": "🔵", "img": "https://apbdb.com/images/items/0.png"},
+        "Steady Sight": {"icon": "📈", "color_tag": "🟠", "img": "https://apbdb.com/images/items/0.png"},
+        "Cooling Jacket 3": {"icon": "📈", "color_tag": "🔴", "img": "https://apbdb.com/images/items/0.png"},
+        "Extended Magazine 3": {"icon": "📈", "color_tag": "🔵", "img": "https://apbdb.com/images/items/0.png"},
+        "Heavy Barrel 3": {"icon": "📈", "color_tag": "🔴", "img": "https://apbdb.com/images/items/0.png"},
+        "High-Magnification Scope": {"icon": "📈", "color_tag": "🟠", "img": "https://apbdb.com/images/items/0.png"},
+        "Huting Sight 3": {"icon": "📈", "color_tag": "🟠", "img": "https://apbdb.com/images/items/0.png"},
+        "Lightweight Frame": {"icon": "📈", "color_tag": "🟣", "img": "https://apbdb.com/images/items/0.png"},
+        "Long-Range Rifling": {"icon": "📈", "color_tag": "🔴", "img": "https://apbdb.com/images/items/0.png"},
+        "Magazine Pull 3": {"icon": "📈", "color_tag": "🔵", "img": "https://apbdb.com/images/items/0.png"},
+        "Mobility Sling": {"icon": "📈", "color_tag": "🟣", "img": "https://apbdb.com/images/items/0.png"},
+        "Muzzle Brake (Horizontal)": {"icon": "📈", "color_tag": "🔴", "img": "https://apbdb.com/images/items/0.png"},
+        "Muzzle Brake (Vertical)": {"icon": "📈", "color_tag": "🔴", "img": "https://apbdb.com/images/items/0.png"},
+        "Reflex Sight 3": {"icon": "📈", "color_tag": "🟠", "img": "https://apbdb.com/images/items/0.png"},
+        "Improved Rifling 3": {"icon": "📈", "color_tag": "🔴", "img": "https://apbdb.com/images/items/0.png"},
+        "Tagger": {"icon": "📈", "color_tag": "🟣", "img": "https://apbdb.com/images/items/0.png"},
+        "3-Point Sling 3": {"icon": "📈", "color_tag": "🟣", "img": "https://apbdb.com/images/items/0.png"}
+    }
+}
