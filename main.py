@@ -206,7 +206,7 @@ class ArmoryNotesModal(discord.ui.Modal, title="X Y Z Syndicate // Tactical Asse
         else:
             embed.set_thumbnail(url=user.display_avatar.url)
 
-        # 🖼️ BANNIÈRE SYNDICATE
+        # 🖼️ BANNIÈRE SYNDICATE ARMORY
         embed.set_image(url="https://cdn.discordapp.com/attachments/1559211818201645066/1559689292933111861/XYZ_Banner_2.png?ex=6acffd59&is=6aceabd9&hm=9bca2268a311a2b9bbcce6194842e8afc1fb1610cec55b521cb990ddb2a78280&")
 
         embed.set_footer(
@@ -555,14 +555,41 @@ class XYZBot(commands.Bot):
 
 client = XYZBot()
 
+# ==========================================
+# ROTATION DES STATUTS TACTIQUES
+# ==========================================
+@tasks.loop(seconds=20)
+async def rotate_bot_presence():
+    statuses = [
+        discord.Game(name="APB Reloaded // Citadel EU ⚡"),
+        discord.Activity(type=discord.ActivityType.watching, name="San Paro Streets & Districts 🏙️"),
+        discord.Activity(type=discord.ActivityType.listening, name="Syndicate Secure Radio 📡"),
+        discord.Game(name="X Y Z Syndicate Core 💀"),
+        discord.Activity(type=discord.ActivityType.playing, name="Financial & Waterfront Warfare 🎯"),
+        discord.Activity(type=discord.ActivityType.watching, name="Over Crimson & Enforcer Targets 🏎️"),
+        discord.Game(name="Marketplace & Armory Matrix 💼"),
+        discord.Activity(type=discord.ActivityType.listening, name="Elite Operatives Comms 🎧")
+    ]
+    for status in statuses:
+        await client.change_presence(status=discord.Status.online, activity=status)
+        await asyncio.sleep(20)
+
+@rotate_bot_presence.before_loop
+async def before_rotate():
+    await client.wait_until_ready()
+
 @client.event
 async def on_ready():
     print(f"🤖 X Y Z Syndicate Bot connecté et opérationnel en tant que {client.user} !")
+    
     with open("core_status.json", "w") as f:
         json.dump({"status": "Online"}, f)
         
     if not update_cluster_stats.is_running():
         update_cluster_stats.start()
+        
+    if not rotate_bot_presence.is_running():
+        rotate_bot_presence.start()
 
 @client.event
 async def on_member_join(member: discord.Member):
@@ -599,6 +626,10 @@ async def on_member_join(member: discord.Member):
             timestamp=discord.utils.utcnow()
         )
         embed_public.set_thumbnail(url=member.display_avatar.url)
+        
+        # 🖼️ BANNIÈRE UNIQUE DÉDIÉE AU WELCOME (Remplace le lien par ton image générée)
+        embed_public.set_image(url="https://cdn.discordapp.com/attachments/1559211818201645066/1560058116912062506/XYZ_Banner_3.png?ex=6ad154d7&is=6ad00357&hm=d6e14419ced78098f060af8e2460b6248f5353e2654991143510756f6a4feb90&")
+        
         embed_public.set_footer(text=f"Operative ID: {member.id} | X Y Z Syndicate Core", icon_url=member.guild.icon.url if member.guild.icon else None)
         
         await welcome_channel.send(content=f"⚠️ **New Arrival Alert:** {member.mention}", embed=embed_public)
@@ -622,6 +653,8 @@ async def on_member_join(member: discord.Member):
             color=0xD4AF37,
             timestamp=discord.utils.utcnow()
         )
+        embed_dm.set_thumbnail(url=member.display_avatar.url)
+        embed_dm.set_image(url="https://cdn.discordapp.com/attachments/1559211818201645066/1559689292933111861/XYZ_Banner_2.png?ex=6acffd59&is=6aceabd9&hm=9bca2268a311a2b9bbcce6194842e8afc1fb1610cec55b521cb990ddb2a78280&")
         embed_dm.set_footer(text="X Y Z Syndicate Security Core")
         await member.send(embed=embed_dm)
     except discord.Forbidden:
