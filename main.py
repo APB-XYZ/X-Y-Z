@@ -8,7 +8,7 @@ import os
 import time
 from dotenv import load_dotenv
 
-# Chargement du fichier .env local (ignoré en production sur Koyeb si géré via les secrets du dashboard)
+# Chargement du fichier .env local
 load_dotenv()
 
 # ==========================================
@@ -95,23 +95,17 @@ class VerificationModal(discord.ui.Modal, title="X Y Z Syndicate // Final Protoc
             ephemeral=True
         )
 
-        try:
-            disabled_view = VerificationView(completed=True)
-            await interaction.message.edit(view=disabled_view)
-        except Exception:
-            pass
-
 class VerificationView(discord.ui.View):
-    def __init__(self, completed=False):
+    def __init__(self):
         super().__init__(timeout=None)
-        if completed:
-            for child in self.children:
-                child.disabled = True
-                child.label = "Registration Completed"
-                child.style = discord.ButtonStyle.secondary
 
     @discord.ui.button(label="Accept Rules & Set APB Nickname", style=discord.ButtonStyle.success, custom_id="verify_rules_xyz", emoji="⚡")
     async def verify_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        member_role = interaction.guild.get_role(ROLE_IDS["member"])
+        if member_role and member_role in interaction.user.roles:
+            await interaction.response.send_message("⚠️ You have already completed your registration protocol and you are a validated member.", ephemeral=True)
+            return
+            
         await interaction.response.send_modal(VerificationModal())
 
 class RanksOnboardingView(discord.ui.View):
@@ -127,7 +121,7 @@ class RanksOnboardingView(discord.ui.View):
             title="⚡ X Y Z // ONBOARDING: STEP 2 (RULES) ⚡",
             description=(
                 f"> **SECURE TRANSMISSION // ACCESS GRANTED**\n"
-                f"> *You have reviewed the hierarchy. Now, proceed to {rules_mention} to read our core regulations and validate your final clearance.*\n\n"
+                f"> *You have reviewed the hierarchy. Now, proceed directly to {rules_mention} above to read our core regulations and validate your final clearance.*\n\n"
                 "---\n"
                 f"> *« Discipline and mutual respect forge our strength. »*"
             ),
@@ -212,7 +206,7 @@ class ArmoryNotesModal(discord.ui.Modal, title="X Y Z Syndicate // Tactical Asse
         else:
             embed.set_thumbnail(url=user.display_avatar.url)
 
-        # 🖼️ BANNIÈRE SYNDICATE (Remplace l'URL si besoin par le lien direct de ton image)
+        # 🖼️ BANNIÈRE SYNDICATE
         embed.set_image(url="https://cdn.discordapp.com/attachments/1559211818201645066/1559689292933111861/XYZ_Banner_2.png?ex=6acffd59&is=6aceabd9&hm=9bca2268a311a2b9bbcce6194842e8afc1fb1610cec55b521cb990ddb2a78280&")
 
         embed.set_footer(
