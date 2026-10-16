@@ -1,0 +1,68 @@
+{
+    "status": "Online 🟢",
+    "total_ccu": 182,
+    "enf_total": 85,
+    "crim_total": 97,
+    "districts": [
+        {
+            "name": "EU Financial-2",
+            "type": "MISSIONS",
+            "pop": 55
+        },
+        {
+            "name": "EU Waterfront-2",
+            "type": "MISSIONS",
+            "pop": 49
+        },
+        {
+            "name": "EU Financial Minigame",
+            "type": "MISSIONS",
+            "pop": 37
+        },
+        {
+            "name": "EU Social",
+            "type": "SOCIAL",
+            "pop": 26
+        },
+        {
+            "name": "EU Financial-3",
+            "type": "MISSIONS",
+            "pop": 5
+        },
+        {
+            "name": "EU Waterfront-1",
+            "type": "MISSIONS",
+            "pop": 4
+        },
+        {
+            "name": "EU Financial ActionEvent",
+            "type": "COMMUNITY EVENT",
+            "pop": 3
+        },
+        {
+            "name": "EU Financial-1",
+            "type": "MISSIONS",
+            "pop": 2
+        },
+        {
+            "name": "EU Waterfront ActionEvent",
+            "type": "COMMUNITY EVENT",
+            "pop": 1
+        },
+        {
+            "name": "EU PGAsylum",
+            "type": "FIGHT CLUB",
+            "pop": 0
+        },
+        {
+            "name": "EU PGCrate",
+            "type": "FIGHT CLUB",
+            "pop": 0
+        },
+        {
+            "name": "EU Waterfront Minigame",
+            "type": "MISSIONS",
+            "pop": 0
+        }
+    ]
+}
