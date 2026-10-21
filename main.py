@@ -224,7 +224,6 @@ class ApprovalView(discord.ui.View):
         await interaction.message.edit(embed=embed, view=self)
         await interaction.response.send_message(f"✅ Operative **{self.apb_pseudo}** ({member.mention}) has been successfully approved and granted [Member] clearance.", ephemeral=True)
 
-        # Maintenir fermement le pseudo APB validé
         data = load_levels()
         current_lvl = data.get(str(member.id), {}).get("level", 1)
         await update_member_nickname_and_role(member, current_lvl, forced_name=self.apb_pseudo)
@@ -264,7 +263,6 @@ class ApprovalView(discord.ui.View):
         await interaction.message.edit(embed=embed, view=self)
         await interaction.response.send_message(f"🤝 Operative **{self.apb_pseudo}** ({member.mention}) has been approved as a **Special Guest / Friend** of the syndicate.", ephemeral=True)
 
-        # Maintenir fermement le pseudo APB validé
         data = load_levels()
         current_lvl = data.get(str(member.id), {}).get("level", 1)
         await update_member_nickname_and_role(member, current_lvl, forced_name=self.apb_pseudo)
@@ -344,7 +342,6 @@ class VerificationModal(discord.ui.Modal, title="X Y Z Syndicate // Final Protoc
         clean_name = re.sub(r'(\s*\[Lvl\s+\d+\]\s*)+', '', pseudo).strip()
         formatted_nick = f"{clean_name} [Lvl {current_lvl}]"[:32]
 
-        # Appliquer immédiatement le pseudo APB propre
         if member != guild.owner:
             try:
                 await member.edit(nick=formatted_nick)
@@ -878,7 +875,7 @@ async def before_rotate():
     await client.wait_until_ready()
 
 # ==========================================
-# APB CITADEL (EU) PRECISE FLEX-BAR SCRAPER
+# APB CITADEL (EU) SCRAPER EXCLUSIF EUROPE (PRÉCIS & CALCULS PARFAITS)
 # ==========================================
 def fetch_citadel_detailed_status():
     data = {
@@ -889,89 +886,118 @@ def fetch_citadel_detailed_status():
         "districts": []
     }
     try:
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-        res = requests.get("https://www.gamersfirst.com/apb/status", headers=headers, timeout=5.0)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.9"
+        }
+        res = requests.get("https://www.gamersfirst.com/apb/status", headers=headers, timeout=8.0)
+        
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, 'html.parser')
             
-            parsed_districts = []
-            accumulated_enf = 0
-            accumulated_crim = 0
+            # On cible uniquement le conteneur européen officiel id="panel-EU"
+            eu_panel = soup.find(id="panel-EU")
+            if not eu_panel:
+                eu_panel = soup # Fallback si l'ID change
             
-            rows = soup.find_all(string=re.compile(r'EU\s+(Financial|Waterfront|Social|PG)'))
-            seen = set()
-            
-            for row in rows:
-                name_raw = row.strip()
-                if name_raw and name_raw not in seen and len(name_raw) < 40:
-                    seen.add(name_raw)
-                    clean_name = re.sub(r'\s*\(#?\d+\)', '', name_raw)
-                    clean_name = re.sub(r'#\d+', '', clean_name).strip()
+            # Extraction des totaux globaux de la section Europe
+            sum_total_elem = eu_panel.find(class_='sum-total')
+            if sum_total_elem:
+                match_online = re.search(r'(\d+)', sum_total_elem.get_text())
+                if match_online:
+                    data["total_ccu"] = int(match_online.group(1))
 
-                    pop_val = 0
-                    enf_val = 0
-                    crim_val = 0
+            enf_summary = eu_panel.find('span', class_='enf')
+            crim_summary = eu_panel.find('span', class_='crim')
+            
+            if enf_summary:
+                match_enf = re.search(r'(\d+)', enf_summary.get_text())
+                if match_enf:
+                    data["enf_total"] = int(match_enf.group(1))
                     
-                    container = row.find_parent(['div', 'tr', 'li'])
-                    if container:
-                        container_text = container.get_text()
-                        all_nums = re.findall(r'\b\d{1,3}\b', container_text)
-                        if all_nums:
-                            pop_val = int(all_nums[-1])
+            if crim_summary:
+                match_crim = re.search(r'(\d+)', crim_summary.get_text())
+                if match_crim:
+                    data["crim_total"] = int(match_crim.group(1))
 
-                        enf_span = container.find('span', class_='enf', style=True)
-                        crim_span = container.find('span', class_='crim', style=True)
-                        
-                        flex_enf = 1
-                        flex_crim = 1
-                        
-                        if enf_span:
-                            m_enf = re.search(r'flex:\s*([\d.]+)', enf_span.get('style', ''))
-                            if m_enf:
-                                flex_enf = float(m_enf.group(1))
-                                
-                        if crim_span:
-                            m_crim = re.search(r'flex:\s*([\d.]+)', crim_span.get('style', ''))
-                            if m_crim:
-                                flex_crim = float(m_crim.group(1))
+            parsed_districts = []
+            
+            # Récupération de chaque ligne de district dans le tableau européen
+            district_rows = eu_panel.find_all(class_='status-district')
+            
+            calc_online = 0
+            calc_enf = 0
+            calc_crim = 0
 
-                        total_flex = flex_enf + flex_crim
-                        if total_flex > 0 and pop_val > 0:
-                            enf_val = round(pop_val * (flex_enf / total_flex))
-                            crim_val = pop_val - enf_val
-                        else:
-                            enf_val = round(pop_val / 2)
-                            crim_val = pop_val - enf_val
+            for row in district_rows:
+                # Nom du district
+                name_elem = row.find(class_='d-name')
+                if not name_elem:
+                    continue
+                clean_name = name_elem.get_text().strip()
+                
+                # Type de district (Missions, Social, Fight Club, Dynamic Event, Community Event)
+                type_elem = row.find(class_='d-type')
+                d_type = type_elem.get_text().strip().upper() if type_elem else "MISSIONS"
 
-                    accumulated_enf += enf_val
-                    accumulated_crim += crim_val
+                # Population totale du district
+                pop_elem = row.find(class_='d-total')
+                pop_val = int(pop_elem.get_text().strip()) if pop_elem and pop_elem.get_text().strip().isdigit() else 0
 
-                    d_type = "MISSIONS"
-                    if "Social" in clean_name:
-                        d_type = "SOCIAL"
-                    elif "Fight Club" in clean_name or "PG" in clean_name:
-                        d_type = "FIGHT CLUB"
-                    elif "ActionEvent" in clean_name:
-                        d_type = "COMMUNITY EVENT"
+                # Récupération exacte des Enforcers et Criminals via l'attribut title de cell-c (ex: title="27 ENF · 30 CRIM")
+                enf_val = 0
+                crim_val = 0
+                cell_c = row.find(class_='cell-c')
+                if cell_c and cell_c.has_attr('title'):
+                    title_text = cell_c['title']
+                    m_enf = re.search(r'(\d+)\s*ENF', title_text)
+                    m_crim = re.search(r'(\d+)\s*CRIM', title_text)
+                    if m_enf:
+                        enf_val = int(m_enf.group(1))
+                    if m_crim:
+                        crim_val = int(m_crim.group(1))
+                
+                # Sécurité de secours si le title n'est pas trouvé : lecture des barres flex CSS
+                if enf_val == 0 and crim_val == 0 and pop_val > 0:
+                    enf_span = row.find('span', class_='enf', style=True)
+                    crim_span = row.find('span', class_='crim', style=True)
+                    flex_enf = float(re.search(r'flex:\s*([\d.]+)', enf_span.get('style', '')).group(1)) if enf_span else 1.0
+                    flex_crim = float(re.search(r'flex:\s*([\d.]+)', crim_span.get('style', '')).group(1)) if crim_span else 1.0
+                    total_flex = flex_enf + flex_crim
+                    enf_val = round(pop_val * (flex_enf / total_flex))
+                    crim_val = pop_val - enf_val
 
-                    parsed_districts.append({
-                        "name": clean_name,
-                        "type": d_type,
-                        "pop": pop_val
-                    })
+                calc_online += pop_val
+                calc_enf += enf_val
+                calc_crim += crim_val
+
+                parsed_districts.append({
+                    "name": clean_name,
+                    "type": d_type,
+                    "pop": pop_val,
+                    "enf": enf_val,
+                    "crim": crim_val
+                })
 
             if parsed_districts:
-                data["districts"] = parsed_districts[:15]
+                # Tri dynamique du plus actif au plus calme
+                parsed_districts = sorted(parsed_districts, key=lambda x: x['pop'], reverse=True)
+                data["districts"] = parsed_districts
+                
+                # Synchronisation parfaite des totaux globaux avec la somme réelle des districts EU
+                if calc_online > 0:
+                    data["total_ccu"] = calc_online
+                if calc_enf > 0:
+                    data["enf_total"] = calc_enf
+                if calc_crim > 0:
+                    data["crim_total"] = calc_crim
 
-            data["enf_total"] = accumulated_enf
-            data["crim_total"] = accumulated_crim
-            data["total_ccu"] = accumulated_enf + accumulated_crim
-
+        # Sauvegarde propre dans citadel_data.json
         with open("citadel_data.json", "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
     except Exception as e:
-        print(f"⚠️ [PRECISE SCRAPER ERROR]: {e}")
+        print(f"⚠️ [CITADEL SCRAPER ERROR]: {e}")
         if os.path.exists("citadel_data.json"):
             with open("citadel_data.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -1028,18 +1054,16 @@ def fetch_apb_news():
     return news_list[:10]
 
 # ==========================================
-# X Y Z LEVELING & RIGHT-SIDE PSEUDO SYNC (CORRIGÉ POUR CONSERVER LE PSEUDO APB)
+# X Y Z LEVELING & RIGHT-SIDE PSEUDO SYNC (CONSERVE LE PSEUDO APB)
 # ==========================================
 XP_COOLDOWN = {}
 
 async def update_member_nickname_and_role(member: discord.Member, new_level: int, forced_name: str = None):
-    """Met à jour le niveau tout en préservant strictement le pseudo APB choisi (sans le faire retomber sur le pseudo Discord)"""
     guild = member.guild
     
     if member == guild.owner:
         return
 
-    # Si un nom forcé (APB) est passé, on l'utilise. Sinon, on extrait le nom propre du pseudo actuel (en enlevant [Lvl XX])
     if forced_name:
         clean_name = re.sub(r'(\s*\[Lvl\s+\d+\]\s*)+', '', forced_name).strip()
     else:
@@ -1339,10 +1363,24 @@ async def auto_update_citadel_live():
     for d in api_data["districts"]:
         clean_name = re.sub(r'\s*\(#?\d+\)', '', d['name'])
         clean_name = re.sub(r'#\d+', '', clean_name).strip()
-        icon = "🏙️" if "Financial" in clean_name else ("🌊" if "Waterfront" in clean_name else ("☕" if "Social" in clean_name else "⚔️"))
+        icon = "🏙️" if "Financial" in clean_name else ("🌊" if "Waterfront" in clean_name else ("☕" if "Social" in clean_name else ("🥊" if "Fight" in clean_name else "⚡")))
         
         pop = d['pop']
-        districts_text += f"> {icon} **`{clean_name:<22}`** ➔ `{d['type']:<15}` | 👥 **{pop:>2} players**\n"
+        enf = d['enf']
+        crim = d['crim']
+        districts_text += f"> {icon} **`{clean_name:<28}`** ➔ `{d['type']:<15}` | 👥 **{pop}p** (🛡️ `{enf}` | 💀 `{crim}`)\n"
+
+    total = api_data['total_ccu']
+    enf_tot = api_data['enf_total']
+    crim_tot = api_data['crim_total']
+    
+    enf_pct = int((enf_tot / total) * 100) if total > 0 else 0
+    crim_pct = int((crim_tot / total) * 100) if total > 0 else 0
+
+    bar_length = 10
+    enf_blocks = int((enf_tot / total) * bar_length) if total > 0 else 5
+    crim_blocks = bar_length - enf_blocks
+    progress_bar = "🟦" * enf_blocks + "🟥" * crim_blocks
 
     embed = discord.Embed(
         title="⚡ SAN PARO // CITADEL (EU) LIVE DISTRICTS ⚡",
@@ -1351,10 +1389,11 @@ async def auto_update_citadel_live():
             f"> *Real-time tactical intelligence intercepted across San Paro servers.*\n\n"
             f"```ini\n"
             f"[ SYSTEM STATUS ] : {api_data['status']}\n"
-            f"[ TOTAL ONLINE  ] : {api_data['total_ccu']} OPERATIVES\n"
-            f"[ ENFORCERS     ] : {api_data['enf_total']} UNITS (🛡️)\n"
-            f"[ CRIMINALS     ] : {api_data['crim_total']} UNITS (💀)\n"
+            f"[ TOTAL ONLINE  ] : {total} OPERATIVES\n"
+            f"[ ENFORCERS     ] : {enf_tot} UNITS ({enf_pct}%) 🛡️\n"
+            f"[ CRIMINALS     ] : {crim_tot} UNITS ({crim_pct}%) 💀\n"
             f"```\n"
+            f"**GLOBAL RATIO:** {progress_bar}\n"
             f"---\n"
             f"### 🏙️ **COMPLETE DISTRICT MATRIX**\n"
             f"{districts_text}"
@@ -1603,10 +1642,19 @@ async def slash_apb_citadel(interaction: discord.Interaction):
     for d in api_data["districts"]:
         clean_name = re.sub(r'\s*\(#?\d+\)', '', d['name'])
         clean_name = re.sub(r'#\d+', '', clean_name).strip()
-        icon = "🏙️" if "Financial" in clean_name else ("🌊" if "Waterfront" in clean_name else ("☕" if "Social" in clean_name else "⚔️"))
+        icon = "🏙️" if "Financial" in clean_name else ("🌊" if "Waterfront" in clean_name else ("☕" if "Social" in clean_name else ("🥊" if "Fight" in clean_name else "⚡")))
         
         pop = d['pop']
-        districts_text += f"> {icon} **`{clean_name:<22}`** ➔ `{d['type']:<15}` | 👥 **{pop:>2} players**\n"
+        enf = d['enf']
+        crim = d['crim']
+        districts_text += f"> {icon} **`{clean_name:<28}`** ➔ `{d['type']:<15}` | 👥 **{pop}p** (🛡️ `{enf}` | 💀 `{crim}`)\n"
+
+    total = api_data['total_ccu']
+    enf_tot = api_data['enf_total']
+    crim_tot = api_data['crim_total']
+    
+    enf_pct = int((enf_tot / total) * 100) if total > 0 else 0
+    crim_pct = int((crim_tot / total) * 100) if total > 0 else 0
 
     embed = discord.Embed(
         title="⚡ SAN PARO // CITADEL (EU) LIVE DISTRICTS ⚡",
@@ -1615,9 +1663,9 @@ async def slash_apb_citadel(interaction: discord.Interaction):
             f"> *Real-time tactical intelligence intercepted across San Paro servers.*\n\n"
             f"```ini\n"
             f"[ SYSTEM STATUS ] : {api_data['status']}\n"
-            f"[ TOTAL ONLINE  ] : {api_data['total_ccu']} OPERATIVES\n"
-            f"[ ENFORCERS     ] : {api_data['enf_total']} UNITS (🛡️)\n"
-            f"[ CRIMINALS     ] : {api_data['crim_total']} UNITS (💀)\n"
+            f"[ TOTAL ONLINE  ] : {total} OPERATIVES\n"
+            f"[ ENFORCERS     ] : {enf_tot} UNITS ({enf_pct}%) 🛡️\n"
+            f"[ CRIMINALS     ] : {crim_tot} UNITS ({crim_pct}%) 💀\n"
             f"```\n"
             f"---\n"
             f"### 🏙️ **COMPLETE DISTRICT MATRIX**\n"
@@ -1633,7 +1681,7 @@ async def slash_apb_citadel(interaction: discord.Interaction):
     
     try:
         async for message in target_channel.history(limit=10):
-            if message.author == client.user or message.author == interaction.guild.me:
+            if message.author == client.user or message.author == guild.me:
                 await message.edit(embed=embed)
                 return
         await target_channel.send(embed=embed)
