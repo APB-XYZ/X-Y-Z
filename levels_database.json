@@ -1,14 +1,50 @@
 {
     "760989330507956245": {
-        "xp": 308,
+        "xp": 71,
+        "level": 2,
+        "messages": 10,
+        "voice_minutes": 1
+    },
+    "1559625442879733872": {
+        "xp": 83,
+        "level": 1,
+        "messages": 3,
+        "voice_minutes": 0
+    },
+    "1269047452783083684": {
+        "xp": 29,
+        "level": 1,
+        "messages": 1,
+        "voice_minutes": 0
+    },
+    "315901085573447680": {
+        "xp": 0,
+        "level": 1,
+        "messages": 0,
+        "voice_minutes": 0
+    },
+    "239017685952888832": {
+        "xp": 56,
+        "level": 1,
+        "messages": 2,
+        "voice_minutes": 0
+    },
+    "1259909829003055187": {
+        "xp": 161,
         "level": 1,
         "messages": 6,
         "voice_minutes": 0
     },
-    "1559625442879733872": {
-        "xp": 53,
+    "285051397484052481": {
+        "xp": 0,
         "level": 1,
-        "messages": 2,
+        "messages": 0,
+        "voice_minutes": 0
+    },
+    "326358267120844820": {
+        "xp": 107,
+        "level": 1,
+        "messages": 4,
         "voice_minutes": 0
     }
 }

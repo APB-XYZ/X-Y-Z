@@ -40,7 +40,8 @@ ROLE_IDS = {
     "recruit": int(os.getenv("ROLE_RECRUIT", 0)),      
     "pending": int(os.getenv("ROLE_PENDING", 0)),      
     "denied": int(os.getenv("ROLE_DENIED", 0)),        
-    "member": int(os.getenv("ROLE_MEMBER", 0))        
+    "member": int(os.getenv("ROLE_MEMBER", 0)),
+    "guest": int(os.getenv("ROLE_GUEST", 0))          # Rôle Ami / Invité Spécial
 }
 
 # ==========================================
@@ -143,18 +144,13 @@ class TicketCreateView(discord.ui.View):
             await interaction.response.send_message(f"⚠️ You already have an open secure ticket: {existing_channel.mention}", ephemeral=True)
             return
 
-        # ==========================================
-        # PERMISSIONS STRICTES (PRIVÉ)
-        # ==========================================
         overwrites = {
-            guild.default_role: discord.PermissionOverwrite(view_channel=False),  # Invisible pour @everyone
-            member: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True), # Visible uniquement par l'auteur
-            guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True) # Visible par le bot
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            member: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True),
+            guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True)
         }
 
-        # Ajouter les rôles du Staff / Officiers pour qu'ils puissent voir le ticket
-        # On peut cibler le rôle Member ou un rôle Officer si tu en as un
-        staff_role_ids = [ROLE_IDS.get("member", 0)] # Tu peux ajouter d'autres IDs de rôles staff ici si besoin
+        staff_role_ids = [ROLE_IDS.get("member", 0)]
         for r_id in staff_role_ids:
             if r_id:
                 staff_role = guild.get_role(r_id)
@@ -165,7 +161,7 @@ class TicketCreateView(discord.ui.View):
             ticket_channel = await guild.create_text_channel(
                 name=ticket_channel_name,
                 category=category,
-                overwrites=overwrites, # Application stricte des permissions privées
+                overwrites=overwrites,
                 topic=f"Secure support ticket for operative {member.name} (ID: {member.id})"
             )
         except Exception as e:
@@ -198,7 +194,7 @@ class ApprovalView(discord.ui.View):
         self.member_id = member_id
         self.apb_pseudo = apb_pseudo
 
-    @discord.ui.button(label="Approve Operative", style=discord.ButtonStyle.success, custom_id="approve_op_xyz", emoji="✅")
+    @discord.ui.button(label="Approve Operative", style=discord.ButtonStyle.success, custom_id="approve_op_xyz", emoji="✅", row=0)
     async def approve_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         guild = interaction.guild
         member = guild.get_member(self.member_id)
@@ -223,17 +219,62 @@ class ApprovalView(discord.ui.View):
 
         embed = interaction.message.embeds[0]
         embed.color = 0x00FF66
-        embed.add_field(name="🛡️ MAINFRAME STATUS", value=f"✅ Approved by {interaction.user.mention}", inline=False)
+        embed.add_field(name="🛡️ MAINFRAME STATUS", value=f"✅ Approved as Official Member by {interaction.user.mention}", inline=False)
 
         await interaction.message.edit(embed=embed, view=self)
         await interaction.response.send_message(f"✅ Operative **{self.apb_pseudo}** ({member.mention}) has been successfully approved and granted [Member] clearance.", ephemeral=True)
+
+        # Maintenir fermement le pseudo APB validé
+        data = load_levels()
+        current_lvl = data.get(str(member.id), {}).get("level", 1)
+        await update_member_nickname_and_role(member, current_lvl, forced_name=self.apb_pseudo)
 
         try:
             await member.send(f"⚡ **[MAINFRAME CLEARANCE GRANTED]** Your APB callsign **{self.apb_pseudo}** has been verified by the command staff. You are now a fully authorized member of the X Y Z Syndicate!")
         except Exception:
             pass
 
-    @discord.ui.button(label="Reject Callsign", style=discord.ButtonStyle.danger, custom_id="reject_op_xyz", emoji="❌")
+    @discord.ui.button(label="Approve as Guest", style=discord.ButtonStyle.primary, custom_id="approve_guest_xyz", emoji="🤝", row=0)
+    async def guest_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        guild = interaction.guild
+        member = guild.get_member(self.member_id)
+
+        if not member:
+            await interaction.response.send_message("❌ Operative no longer found on the server.", ephemeral=True)
+            return
+
+        pending_role = guild.get_role(ROLE_IDS["pending"])
+        guest_role = guild.get_role(ROLE_IDS["guest"])
+
+        try:
+            if pending_role and pending_role in member.roles:
+                await member.remove_roles(pending_role)
+            if guest_role and guest_role not in member.roles:
+                await member.add_roles(guest_role)
+        except Exception as e:
+            print(f"⚠️ [GUEST ROLE ERROR]: {e}")
+
+        for item in self.children:
+            item.disabled = True
+
+        embed = interaction.message.embeds[0]
+        embed.color = 0x00CCFF
+        embed.add_field(name="🛡️ MAINFRAME STATUS", value=f"🤝 Approved as Special Guest/Friend by {interaction.user.mention}", inline=False)
+
+        await interaction.message.edit(embed=embed, view=self)
+        await interaction.response.send_message(f"🤝 Operative **{self.apb_pseudo}** ({member.mention}) has been approved as a **Special Guest / Friend** of the syndicate.", ephemeral=True)
+
+        # Maintenir fermement le pseudo APB validé
+        data = load_levels()
+        current_lvl = data.get(str(member.id), {}).get("level", 1)
+        await update_member_nickname_and_role(member, current_lvl, forced_name=self.apb_pseudo)
+
+        try:
+            await member.send(f"⚡ **[MAINFRAME GUEST ACCESS]** Your request has been processed. You have been granted special guest clearance to join and play alongside the X Y Z Syndicate operatives!")
+        except Exception:
+            pass
+
+    @discord.ui.button(label="Reject Callsign", style=discord.ButtonStyle.danger, custom_id="reject_op_xyz", emoji="❌", row=1)
     async def reject_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         guild = interaction.guild
         member = guild.get_member(self.member_id)
@@ -303,14 +344,14 @@ class VerificationModal(discord.ui.Modal, title="X Y Z Syndicate // Final Protoc
         clean_name = re.sub(r'(\s*\[Lvl\s+\d+\]\s*)+', '', pseudo).strip()
         formatted_nick = f"{clean_name} [Lvl {current_lvl}]"[:32]
 
+        # Appliquer immédiatement le pseudo APB propre
         if member != guild.owner:
             try:
                 await member.edit(nick=formatted_nick)
             except Exception as e:
                 print(f"⚠️ [VERIFY NICKNAME ERROR]: {e}")
 
-        # Attribuer immédiatement le rôle correspondant au niveau (ex: Lvl 1)
-        await update_member_nickname_and_role(member, current_lvl)
+        await update_member_nickname_and_role(member, current_lvl, forced_name=clean_name)
 
         if recruit_role and recruit_role in member.roles:
             await member.remove_roles(recruit_role)
@@ -987,26 +1028,31 @@ def fetch_apb_news():
     return news_list[:10]
 
 # ==========================================
-# X Y Z LEVELING & RIGHT-SIDE PSEUDO SYNC
+# X Y Z LEVELING & RIGHT-SIDE PSEUDO SYNC (CORRIGÉ POUR CONSERVER LE PSEUDO APB)
 # ==========================================
 XP_COOLDOWN = {}
 
-async def update_member_nickname_and_role(member: discord.Member, new_level: int):
-    """Met à jour automatiquement le pseudo sous le format Nom [Lvl XX] et attribue les rôles selon le niveau"""
+async def update_member_nickname_and_role(member: discord.Member, new_level: int, forced_name: str = None):
+    """Met à jour le niveau tout en préservant strictement le pseudo APB choisi (sans le faire retomber sur le pseudo Discord)"""
     guild = member.guild
     
     if member == guild.owner:
         return
 
-    current_nick = member.nick or member.name
-    clean_name = re.sub(r'(\s*\[Lvl\s+\d+\]\s*)+', '', current_nick).strip()
+    # Si un nom forcé (APB) est passé, on l'utilise. Sinon, on extrait le nom propre du pseudo actuel (en enlevant [Lvl XX])
+    if forced_name:
+        clean_name = re.sub(r'(\s*\[Lvl\s+\d+\]\s*)+', '', forced_name).strip()
+    else:
+        current_nick = member.nick or member.name
+        clean_name = re.sub(r'(\s*\[Lvl\s+\d+\]\s*)+', '', current_nick).strip()
+
     new_nick = f"{clean_name} [Lvl {new_level}]"[:32]
 
     if member.nick != new_nick:
         try:
             await member.edit(nick=new_nick)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"⚠️ [NICKNAME UPDATE ERROR]: {e}")
 
     sorted_tiers = sorted(LEVEL_REWARDS.items(), key=lambda x: x[0], reverse=True)
     
@@ -1172,7 +1218,6 @@ async def slash_sync_name(interaction: discord.Interaction):
     await interaction.response.send_message(f"✅ Callsign and level role synchronized with **Level {lvl}**!", ephemeral=True)
 
 
-# Commandes de Niveau Avancées
 @client.tree.command(name="rank", description="Displays your current operative level (1-100), progression and statistics.")
 @app_commands.describe(member="The operative you want to inspect (leave blank for yourself)")
 async def slash_rank(interaction: discord.Interaction, member: discord.Member = None):
@@ -1380,8 +1425,8 @@ async def on_member_join(member: discord.Member):
                 f"> **QUANTUM LINK // INITIALIZING RECRUIT PROTOCOL**\n\n"
                 f"Attention operatives, {member.mention} has successfully breached the network perimeter and joined the **X Y Z // Syndicate**.\n\n"
                 f"```ansi\n"
-                f" [2;33m[STATUS] ➔ Assigned Rank: [Recruit]\n"
-                f" [2;33m[TARGET] ➔ Complete Onboarding & Verification\n"
+                f"\u001b[2;33m[STATUS] ➔ Assigned Rank: [Recruit]\u001b[0m\n"
+                f"\u001b[2;33m[TARGET] ➔ Complete Onboarding & Verification\u001b[0m\n"
                 f"```\n\n"
                 f"A secure direct briefing has been transmitted to your private terminal. Follow the instructions to claim your operational status."
             ),
@@ -1800,6 +1845,7 @@ async def slash_updateranks(interaction: discord.Interaction):
             "---\n\n"
             "### 🛡️ SYNDICATE CORE & SECURITY\n"
             "- **`💀・[Member]`** — Fully validated official operative dedicated to San Paro.\n"
+            "- **`🤝・[Special Guest]`** — Trusted friend or special guest allied with the syndicate.\n"
             "- **`⭐・[Pending Approval]`** — Operative under review in verification-logs pending roster check.\n"
             "- **`⚡・[Recruit]`** — Candidate undergoing strict probation under officer supervision.\n"
             "- **`➖・[Blacklisted]`** — Restricted security cell for rejected or isolated elements.\n"
