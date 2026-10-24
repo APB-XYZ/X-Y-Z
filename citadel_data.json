@@ -1,84 +1,70 @@
 {
     "status": "Online 🟢",
-    "total_ccu": 283,
-    "enf_total": 131,
-    "crim_total": 152,
+    "total_ccu": 266,
+    "enf_total": 138,
+    "crim_total": 128,
     "districts": [
         {
-            "name": "Missions-Waterfront-2-EU-West",
-            "type": "MISSIONS",
-            "pop": 56,
-            "enf": 26,
+            "name": "Social-Social-1",
+            "type": "SOCIAL",
+            "pop": 65,
+            "enf": 35,
             "crim": 30
         },
         {
             "name": "Missions-Financial-1-EU-West",
             "type": "MISSIONS",
-            "pop": 54,
+            "pop": 55,
+            "enf": 28,
+            "crim": 27
+        },
+        {
+            "name": "Missions-Waterfront-2-EU-West",
+            "type": "MISSIONS",
+            "pop": 52,
             "enf": 26,
-            "crim": 28
+            "crim": 26
         },
         {
             "name": "Dynamic Event-Financial-1-EU-West",
             "type": "DYNAMIC EVENT",
-            "pop": 42,
-            "enf": 21,
-            "crim": 21
-        },
-        {
-            "name": "Social-Social-1",
-            "type": "SOCIAL",
-            "pop": 38,
-            "enf": 18,
-            "crim": 20
-        },
-        {
-            "name": "Missions-Financial-3-EU-West",
-            "type": "MISSIONS",
-            "pop": 34,
-            "enf": 14,
-            "crim": 20
-        },
-        {
-            "name": "Community Event-Financial-1-EU-West",
-            "type": "COMMUNITY EVENT",
-            "pop": 22,
-            "enf": 6,
-            "crim": 16
-        },
-        {
-            "name": "Missions-Financial-2-EU-West",
-            "type": "MISSIONS",
-            "pop": 14,
-            "enf": 7,
-            "crim": 7
+            "pop": 48,
+            "enf": 23,
+            "crim": 25
         },
         {
             "name": "Missions-Waterfront-1-EU-West",
             "type": "MISSIONS",
-            "pop": 13,
-            "enf": 7,
-            "crim": 6
+            "pop": 20,
+            "enf": 9,
+            "crim": 11
         },
         {
-            "name": "Missions-Waterfront-3-EU-West",
+            "name": "Missions-Financial-4-EU-West",
             "type": "MISSIONS",
-            "pop": 6,
-            "enf": 4,
-            "crim": 2
-        },
-        {
-            "name": "Community Event-Waterfront-1-EU-West",
-            "type": "COMMUNITY EVENT",
-            "pop": 3,
-            "enf": 2,
-            "crim": 1
+            "pop": 11,
+            "enf": 6,
+            "crim": 5
         },
         {
             "name": "Fight Club-Asylum-1-EU-West",
             "type": "FIGHT CLUB",
-            "pop": 1,
-            "enf": 0,
+            "pop": 9,
+            "enf": 6,
+            "crim": 3
+        },
+        {
+            "name": "Community Event-Waterfront-1-EU-West",
+            "type": "COMMUNITY EVENT",
+            "pop": 4,
+            "enf": 4,
+            "crim": 0
+        },
+        {
+            "name": "Community Event-Financial-1-EU-West",
+            "type": "COMMUNITY EVENT",
+            "pop": 2,
+            "enf": 1,
             "crim": 1
         },
         {
@@ -89,14 +75,14 @@
             "crim": 0
         },
         {
-            "name": "Dynamic Event-Waterfront-1-EU-West",
+            "name": "Dynamic Event-Financial-2-EU-West",
             "type": "DYNAMIC EVENT",
             "pop": 0,
             "enf": 0,
             "crim": 0
         },
         {
-            "name": "Dynamic Event-Financial-2-EU-West",
+            "name": "Dynamic Event-Waterfront-1-EU-West",
             "type": "DYNAMIC EVENT",
             "pop": 0,
             "enf": 0,
